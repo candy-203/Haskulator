@@ -12,3 +12,8 @@ A module to parse and calculate arithmetic expressions containing "* - * / ^"
 To calculate expression `./Haskulator <expression>`
 
 To clean build files run `make clean` 
+
+## Dependencies
+
+* Linux
+* ghc
