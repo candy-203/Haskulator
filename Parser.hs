@@ -9,6 +9,7 @@ module Parser
     run,
     paren,
     parseIntAsDouble,
+    token
   )
 where
 
@@ -96,3 +97,7 @@ paren p = do
   x <- p
   char ')'
   return x
+
+token :: Parser b -> Parser b
+token p = skipSpace >> p
+

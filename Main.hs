@@ -1,14 +1,14 @@
 module Main where
 
 import Control.Applicative (Alternative (..))   
-import Parser (Parser (..), char, paren, parseIntAsDouble, parseDouble)
+import Parser (Parser (..), char, paren, parseIntAsDouble, parseDouble, token)
 import Expression (Expr (..), Op (..), eval)
 import Error (MaybeError(..))
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 
 expr :: Parser Expr
-expr = term >>= exprRest
+expr = token (term >>= exprRest)
 
 exprRest :: Expr -> Parser Expr
 exprRest e1 = do
@@ -18,7 +18,7 @@ exprRest e1 = do
     <|> return e1
 
 term :: Parser Expr
-term = factor >>= termRest
+term = token (factor >>= termRest)
 
 termRest :: Expr -> Parser Expr
 termRest e1 = do
@@ -28,7 +28,7 @@ termRest e1 = do
     <|> return e1
 
 factor :: Parser Expr
-factor = powterm >>= factorRest
+factor = token (powterm >>= factorRest)
 
 factorRest :: Expr -> Parser Expr
 factorRest e1 = do
@@ -38,12 +38,13 @@ factorRest e1 = do
     <|> return e1
 
 powterm :: Parser Expr
-powterm = parseNum <|> paren expr <|> parseMinus
+powterm = token (parseNum <|> paren expr <|> parseMinus parseNum <|> paren (parseMinus parseNum))
 
-parseMinus :: Parser Expr
-parseMinus = do
+
+parseMinus :: Parser Expr -> Parser Expr
+parseMinus p = do
   char '-'
-  Bin Mult (Number (-1)) <$> expr
+  Bin Mult (Number (-1)) <$> p
 
 parseNum :: Parser Expr
 parseNum = Number <$> (parseDouble <|> parseIntAsDouble)
@@ -61,11 +62,13 @@ calculate = calculate'' . calculate'
 
 main :: IO ()
 main = do
-    args <- getArgs
+    rawargs <- getArgs
+    let args = concat rawargs 
     case args of
-        [s] -> do
+        "" -> putStrLn "Usage: ./Haskulator <expression>"
+        s -> do
             let (expr, result) = calculate s
             case result of
                 Success r -> putStrLn $ "Result: " ++ show r
                 Error e -> putStrLn $ "Error: " ++ e
-        _ -> putStrLn "Usage: ./Haskulator <expression>"
+        
