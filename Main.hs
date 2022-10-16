@@ -68,4 +68,4 @@ main = do
             case result of
                 Success r -> putStrLn $ "Result: " ++ show r
                 Error e -> putStrLn $ "Error: " ++ e
-        _ -> putStrLn "Usage: calc <expression>"
+        _ -> putStrLn "Usage: ./Haskulator <expression>"
